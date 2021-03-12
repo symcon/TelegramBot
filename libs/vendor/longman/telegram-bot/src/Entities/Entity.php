@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,94 +11,255 @@
 
 namespace Longman\TelegramBot\Entities;
 
-class Entity
+use Exception;
+use Longman\TelegramBot\Entities\InlineQuery\InlineEntity;
+use Longman\TelegramBot\Entities\InputMedia\InputMedia;
+
+/**
+ * Class Entity
+ *
+ * This is the base class for all entities.
+ *
+ * @link https://core.telegram.org/bots/api#available-types
+ *
+ * @method array  getRawData()     Get the raw data passed to this entity
+ * @method string getBotUsername() Return the bot name passed to this entity
+ */
+abstract class Entity
 {
-    protected $bot_name;
-
-    public function getBotName()
+    /**
+     * Entity constructor.
+     *
+     * @todo Get rid of the $bot_username, it shouldn't be here!
+     *
+     * @param array  $data
+     * @param string $bot_username
+     */
+    public function __construct(array $data, string $bot_username = '')
     {
-        return $this->bot_name;
-    }
-
-    public function toJson()
-    {
-        $fields = $this->reflect($this);
-        $json = json_encode($fields);
-
-        return $json;
-    }
-
-    public function reflect($object = null)
-    {
-        if ($object == null) {
-            $object = $this;
+        //Make sure we're not raw_data inception-ing
+        if (array_key_exists('raw_data', $data)) {
+            if ($data['raw_data'] === null) {
+                unset($data['raw_data']);
+            }
+        } else {
+            $data['raw_data'] = $data;
         }
 
-        $reflection = new \ReflectionObject($object);
-        $properties = $reflection->getProperties();
-
-        $fields = [];
-
-        foreach ($properties as $property) {
-            $name = $property->getName();
-            if ($name == 'bot_name') {
-                continue;
-            }
-
-            if (!$property->isPrivate()) {
-                $array_of_obj = false;
-                $array_of_array_obj = false;
-                if (is_array($object->$name)) {
-                    $array_of_obj = true;
-                    $array_of_array_obj = true;
-                    foreach ($object->$name as $elm) {
-                        if (!is_object($elm)) {
-                            //echo $name . " not array of object \n";
-                            $array_of_obj = false;
-                            //break;
-                        }
-                        if (is_array($elm)) {
-                            foreach ($elm as $more_net) {
-                                if (!is_object($more_net)) {
-                                    $array_of_array_obj = false;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (is_object($object->$name)) {
-                    $fields[$name] = $this->reflect($object->$name);
-                } elseif ($array_of_obj) {
-                    foreach ($object->$name as $elm) {
-                        $fields[$name][] = $this->reflect($elm);
-                    }
-                } elseif ($array_of_array_obj) {
-                    foreach ($object->$name as $elm) {
-                        $temp = null;
-                        if (!is_array($elm) && !is_object($elm)) {
-                            continue;
-                        }
-                        foreach ($elm as $obj) {
-                            $temp[] = $this->reflect($obj);
-                        }
-                        $fields[$name][] = $temp;
-                    }
-                } else {
-                    $property->setAccessible(true);
-                    $value = $property->getValue($object);
-                    if (is_null($value)) {
-                        continue;
-                    }
-                    $fields[$name] = $value;
-                }
-            }
-        }
-        return $fields;
+        $data['bot_username'] = $bot_username;
+        $this->assignMemberVariables($data);
+        $this->validate();
     }
 
+    /**
+     * Perform to json
+     *
+     * @return string
+     */
+    public function toJson(): string
+    {
+        return json_encode($this->getRawData());
+    }
+
+    /**
+     * Perform to string
+     *
+     * @return string
+     */
     public function __toString()
     {
         return $this->toJson();
+    }
+
+    /**
+     * Helper to set member variables
+     *
+     * @param array $data
+     */
+    protected function assignMemberVariables(array $data): void
+    {
+        foreach ($data as $key => $value) {
+            $this->$key = $value;
+        }
+    }
+
+    /**
+     * Get the list of the properties that are themselves Entities
+     *
+     * @return array
+     */
+    protected function subEntities(): array
+    {
+        return [];
+    }
+
+    /**
+     * Perform any special entity validation
+     */
+    protected function validate(): void
+    {
+    }
+
+    /**
+     * Get a property from the current Entity
+     *
+     * @param string $property
+     * @param mixed  $default
+     *
+     * @return mixed
+     */
+    public function getProperty(string $property, $default = null)
+    {
+        return $this->$property ?? $default;
+    }
+
+    /**
+     * Return the variable for the called getter or magically set properties dynamically.
+     *
+     * @param $method
+     * @param $args
+     *
+     * @return mixed|null
+     */
+    public function __call($method, $args)
+    {
+        //Convert method to snake_case (which is the name of the property)
+        $property_name = mb_strtolower(ltrim(preg_replace('/[A-Z]/', '_$0', substr($method, 3)), '_'));
+
+        $action = substr($method, 0, 3);
+        if ($action === 'get') {
+            $property = $this->getProperty($property_name);
+
+            if ($property !== null) {
+                //Get all sub-Entities of the current Entity
+                $sub_entities = $this->subEntities();
+
+                if (isset($sub_entities[$property_name])) {
+                    $class = $sub_entities[$property_name];
+
+                    if (is_array($class)) {
+                        return $this->makePrettyObjectArray(reset($class), $property_name);
+                    }
+
+                    return new $class($property, $this->getProperty('bot_username'));
+                }
+
+                return $property;
+            }
+        } elseif ($action === 'set') {
+            // Limit setters to specific classes.
+            if ($this instanceof InlineEntity || $this instanceof InputMedia || $this instanceof Keyboard || $this instanceof KeyboardButton) {
+                $this->$property_name = $args[0];
+
+                return $this;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Return an array of nice objects from an array of object arrays
+     *
+     * This method is used to generate pretty object arrays
+     * mainly for PhotoSize and Entities object arrays.
+     *
+     * @param string $class
+     * @param string $property
+     *
+     * @return array
+     */
+    protected function makePrettyObjectArray(string $class, string $property): array
+    {
+        $new_objects = [];
+
+        try {
+            if ($objects = $this->getProperty($property)) {
+                foreach ($objects as $object) {
+                    if (!empty($object)) {
+                        $new_objects[] = new $class($object);
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            $new_objects = [];
+        }
+
+        return $new_objects;
+    }
+
+    /**
+     * Escape markdown (v1) special characters
+     *
+     * @see https://core.telegram.org/bots/api#markdown-style
+     *
+     * @param string $string
+     *
+     * @return string
+     */
+    public static function escapeMarkdown(string $string): string
+    {
+        return str_replace(
+            ['[', '`', '*', '_',],
+            ['\[', '\`', '\*', '\_',],
+            $string
+        );
+    }
+
+    /**
+     * Escape markdown (v2) special characters
+     *
+     * @see https://core.telegram.org/bots/api#markdownv2-style
+     *
+     * @param string $string
+     *
+     * @return string
+     */
+    public static function escapeMarkdownV2(string $string): string
+    {
+        return str_replace(
+            ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'],
+            ['\_', '\*', '\[', '\]', '\(', '\)', '\~', '\`', '\>', '\#', '\+', '\-', '\=', '\|', '\{', '\}', '\.', '\!'],
+            $string
+        );
+    }
+
+    /**
+     * Try to mention the user
+     *
+     * Mention the user with the username otherwise print first and last name
+     * if the $escape_markdown argument is true special characters are escaped from the output
+     *
+     * @todo What about MarkdownV2?
+     *
+     * @param bool $escape_markdown
+     *
+     * @return string
+     */
+    public function tryMention($escape_markdown = false): string
+    {
+        // TryMention only makes sense for the User and Chat entity.
+        if (!($this instanceof User || $this instanceof Chat)) {
+            return '';
+        }
+
+        //Try with the username first...
+        $name        = $this->getProperty('username');
+        $is_username = $name !== null;
+
+        if ($name === null) {
+            //...otherwise try with the names.
+            $name      = $this->getProperty('first_name');
+            $last_name = $this->getProperty('last_name');
+            if ($last_name !== null) {
+                $name .= ' ' . $last_name;
+            }
+        }
+
+        if ($escape_markdown) {
+            $name = self::escapeMarkdown($name);
+        }
+
+        return ($is_username ? '@' : '') . $name;
     }
 }

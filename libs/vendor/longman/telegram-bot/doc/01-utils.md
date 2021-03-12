@@ -1,37 +1,58 @@
 ## Logging
-Telegram bot library feats [Monolog](https://github.com/Seldaek/monolog) to store logs.
+PHP Telegram Bot library features [PSR-3] compatible logging to store logs.
 
-Logs are divided in those streams:
-### Error
-Collects all the exceptions throwned by the library:
+You can find a list of compatible packages that can be used on [Packagist][PSR-3-providers].
 
+Logs are divided into the following streams:
+- `error`: Collects all the exceptions thrown by the library.
+- `debug`: Stores requests made to the Telegram API, useful for debugging.
+- `update`: Incoming raw updates (JSON string from Webhook and getUpdates).
+
+### Initialisation
+To initialise the logger, you can pass any `LoggerInterface` objects to the `TelegramLog::initialize` method.
+
+The first parameter is the main logger, the second one is used for the raw updates.
+
+(in this example we're using [Monolog])
 ```php
-TelegramLog::initErrorLog($path . '/' . $BOT_NAME . '_error.log');
-```
+use Longman\TelegramBot\TelegramLog;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
-### Debug
-Stores Curl messages with the server, useful for debugging:
-
-```php
-TelegramLog::initDebugLog($path . '/' . $BOT_NAME . '_debug.log');
+TelegramLog::initialize(
+    // Main logger that handles all 'debug' and 'error' logs.
+    new Logger('telegram_bot', [
+        (new StreamHandler('/path/to/debug_log_file', Logger::DEBUG))->setFormatter(new LineFormatter(null, null, true)),
+        (new StreamHandler('/path/to/error_log_file', Logger::ERROR))->setFormatter(new LineFormatter(null, null, true)),
+    ]),
+    // Updates logger for raw updates.
+    new Logger('telegram_bot_updates', [
+        (new StreamHandler('/path/to/updates_log_file', Logger::INFO))->setFormatter(new LineFormatter('%message%' . PHP_EOL)),
+    ])
+);
 ```
 
 ### Raw data
-Incoming updates (json string from webhook and getUpdates) can be logged in a text file. Set this option with the methods:
+Why do I need to log the raw updates?
+Telegram API changes continuously and it often happens that the database schema is not up to date with new entities/features. So it can happen that your table schema doesn't allow storing new valuable information coming from Telegram.
+
+If you store the raw data you can import all updates on the newest table schema by simply using [this script](../utils/importFromLog.php).
+Remember to always backup first!!
+
+### Always log request and response data
+If you'd like to always log the request and response data to the debug log, even for successful requests, you can set the appropriate variable:
 ```php
-TelegramLog::initUpdateLog($path . '/' . $BOT_NAME . '_update.log');
-```
-Why I need raw log?  
-Telegram api changes continuously and often happen that db schema is not uptodate with new entities/features. So can happen that your table schema would not be able to store valuable new information coming from Telegram.
-
-If you store raw data you can port all updates on the newest table schema just using [this script](../utils/importFromLog.php).
-Remember always backup first!!
-
-## Stream and external sources
-Error and Debug streams relies on the `bot_log` instance that can be provided from an external source:
-
-```php
-TelegramLog::initialize($monolog);
+\Longman\TelegramBot\TelegramLog::$always_log_request_and_response = true;
 ```
 
-Raw data relies on the `bot_update_log` instance that feats a custom format for this kind of logs.
+### Hiding API token from the log
+By default, the API token is removed from the log, to prevent any mistaken leakage when posting logs online.
+This behaviour can be changed by setting the appropriate variable:
+```php
+\Longman\TelegramBot\TelegramLog::$remove_bot_token = false;
+```
+
+[PSR-3]: https://www.php-fig.org/psr/psr-3
+[PSR-3-providers]: https://packagist.org/providers/psr/log-implementation
+[Monolog]: https://github.com/Seldaek/monolog

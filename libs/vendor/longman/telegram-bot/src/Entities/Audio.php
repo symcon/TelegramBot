@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,68 +11,30 @@
 
 namespace Longman\TelegramBot\Entities;
 
-use Longman\TelegramBot\Exception\TelegramException;
-
+/**
+ * Class Audio
+ *
+ * @link https://core.telegram.org/bots/api#audio
+ *
+ * @method string    getFileId()       Identifier for this file, which can be used to download or reuse the file
+ * @method string    getFileUniqueId() Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
+ * @method int       getDuration()     Duration of the audio in seconds as defined by sender
+ * @method string    getPerformer()    Optional. Performer of the audio as defined by sender or by audio tags
+ * @method string    getTitle()        Optional. Title of the audio as defined by sender or by audio tags
+ * @method string    getFileName()     Optional. Original filename as defined by sender
+ * @method string    getMimeType()     Optional. MIME type of the file as defined by sender
+ * @method int       getFileSize()     Optional. File size
+ * @method PhotoSize getThumb()        Optional. Thumbnail of the album cover to which the music file belongs
+ */
 class Audio extends Entity
 {
-    protected $file_id;
-    protected $duration;
-    protected $performer;
-    protected $title;
-    protected $mime_type;
-    protected $file_size;
-
     /**
-     * Audio constructor.
-     *
-     * @param array $data
+     * {@inheritdoc}
      */
-    public function __construct(array $data)
+    protected function subEntities(): array
     {
-        $this->file_id = isset($data['file_id']) ? $data['file_id'] : null;
-        if (empty($this->file_id)) {
-            throw new TelegramException('file_id is empty!');
-        }
-
-        $this->duration = isset($data['duration']) ? $data['duration'] : null;
-        if ($this->duration === '' || $this->duration === null) {
-            throw new TelegramException('duration is empty!');
-        }
-
-        $this->performer = isset($data['performer']) ? $data['performer'] : null;
-
-        $this->title = isset($data['title']) ? $data['title'] : null;
-        $this->mime_type = isset($data['mime_type']) ? $data['mime_type'] : null;
-        $this->file_size = isset($data['file_size']) ? $data['file_size'] : null;
-    }
-
-    public function getFileId()
-    {
-        return $this->file_id;
-    }
-
-    public function getDuration()
-    {
-         return $this->duration;
-    }
-
-    public function getPerformer()
-    {
-        return $this->performer;
-    }
-
-    public function getTitle()
-    {
-        return $this->title;
-    }
-
-    public function getMimeType()
-    {
-         return $this->mime_type;
-    }
-
-    public function getFileSize()
-    {
-         return $this->file_size;
+        return [
+            'thumb' => PhotoSize::class,
+        ];
     }
 }

@@ -25,33 +25,33 @@ class InstalledVersions
 private static $installed = array (
   'root' => 
   array (
-    'pretty_version' => '1.0.0+no-version-set',
-    'version' => '1.0.0.0',
+    'pretty_version' => 'dev-master',
+    'version' => 'dev-master',
     'aliases' => 
     array (
     ),
-    'reference' => NULL,
+    'reference' => '8db23e8f3cd773d9b945a2dd6e3d7bbc59edddb0',
     'name' => '__root__',
   ),
   'versions' => 
   array (
     '__root__' => 
     array (
-      'pretty_version' => '1.0.0+no-version-set',
-      'version' => '1.0.0.0',
+      'pretty_version' => 'dev-master',
+      'version' => 'dev-master',
       'aliases' => 
       array (
       ),
-      'reference' => NULL,
+      'reference' => '8db23e8f3cd773d9b945a2dd6e3d7bbc59edddb0',
     ),
     'guzzlehttp/guzzle' => 
     array (
-      'pretty_version' => '6.5.5',
-      'version' => '6.5.5.0',
+      'pretty_version' => '7.2.0',
+      'version' => '7.2.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '9d4290de1cfd701f38099ef7e183b64b4b7b0c5e',
+      'reference' => '0aa74dfb41ae110835923ef10a9d803a22d50e79',
     ),
     'guzzlehttp/promises' => 
     array (
@@ -73,21 +73,28 @@ private static $installed = array (
     ),
     'longman/telegram-bot' => 
     array (
-      'pretty_version' => '0.35',
-      'version' => '0.35.0.0',
+      'pretty_version' => '0.71.0',
+      'version' => '0.71.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'd97f386209ccb5ab802ee55a20f8c7b5306a1595',
+      'reference' => '9ca6158f9fe6cf5aa06f9c46377b3c1164bdf444',
     ),
-    'monolog/monolog' => 
+    'psr/http-client' => 
     array (
-      'pretty_version' => '1.26.0',
-      'version' => '1.26.0.0',
+      'pretty_version' => '1.0.1',
+      'version' => '1.0.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '2209ddd84e7ef1256b7af205d0717fb62cfc9c33',
+      'reference' => '2dfb5f6c5eff0e91e20e913f8c5452ed95b86621',
+    ),
+    'psr/http-client-implementation' => 
+    array (
+      'provided' => 
+      array (
+        0 => '1.0',
+      ),
     ),
     'psr/http-message' => 
     array (
@@ -114,13 +121,6 @@ private static $installed = array (
       ),
       'reference' => '0f73288fd15629204f9d42b7055f72dacbe811fc',
     ),
-    'psr/log-implementation' => 
-    array (
-      'provided' => 
-      array (
-        0 => '1.0.0',
-      ),
-    ),
     'ralouphie/getallheaders' => 
     array (
       'pretty_version' => '3.0.3',
@@ -129,33 +129,6 @@ private static $installed = array (
       array (
       ),
       'reference' => '120b605dfeb996808c31b6477290a714d356e822',
-    ),
-    'symfony/polyfill-intl-idn' => 
-    array (
-      'pretty_version' => 'v1.22.1',
-      'version' => '1.22.1.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '2d63434d922daf7da8dd863e7907e67ee3031483',
-    ),
-    'symfony/polyfill-intl-normalizer' => 
-    array (
-      'pretty_version' => 'v1.22.1',
-      'version' => '1.22.1.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '43a0283138253ed1d48d352ab6d0bdb3f809f248',
-    ),
-    'symfony/polyfill-php72' => 
-    array (
-      'pretty_version' => 'v1.22.1',
-      'version' => '1.22.1.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => 'cc6e6f9b39fe8075b3dabfbaf5b5f645ae1340c9',
     ),
   ),
 );

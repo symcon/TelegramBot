@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,81 +11,28 @@
 
 namespace Longman\TelegramBot\Entities;
 
-use Longman\TelegramBot\Exception\TelegramException;
-
+/**
+ * Class Venue
+ *
+ * @link https://core.telegram.org/bots/api#venue
+ *
+ * @method Location getLocation()        Venue location
+ * @method string   getTitle()           Name of the venue
+ * @method string   getAddress()         Address of the venue
+ * @method string   getFoursquareId()    Optional. Foursquare identifier of the venue
+ * @method string   getFoursquareType()  Optional. Foursquare type of the venue. (For example, “arts_entertainment/default”, “arts_entertainment/aquarium” or “food/icecream”.)
+ * @method string   getGooglePlaceId()   Optional. Google Places identifier of the venue
+ * @method string   getGooglePlaceType() Optional. Google Places type of the venue
+ */
 class Venue extends Entity
 {
-    protected $location;
-    protected $latitude;
-    protected $longitude;
-    protected $title;
-    protected $address;
-    protected $foursquare_id;
-
     /**
-     * Venue constructor.
-     *
-     * @param array $data
+     * {@inheritdoc}
      */
-    public function __construct(array $data)
+    protected function subEntities(): array
     {
-        $this->location = isset($data['location']) ? $data['location'] : null;
-        $this->latitude = isset($data['latitude']) ? $data['latitude'] : null;
-        $this->longitude = isset($data['longitude']) ? $data['longitude'] : null;
-
-        // Venue can either contain location object or just latitude and longitude fields, check accordingly
-        if (!empty($this->location)) {
-            $this->location = new Location($this->location);
-        } else {
-            if (empty($this->latitude)) {
-                throw new TelegramException('latitude is empty!');
-            }
-
-            if (empty($this->longitude)) {
-                throw new TelegramException('longitude is empty!');
-            }
-        }
-
-        $this->title = isset($data['title']) ? $data['title'] : null;
-        if (empty($this->title)) {
-            throw new TelegramException('title is empty!');
-        }
-
-        $this->address = isset($data['address']) ? $data['address'] : null;
-        if (empty($this->address)) {
-            throw new TelegramException('address is empty!');
-        }
-
-        $this->foursquare_id = isset($data['foursquare_id']) ? $data['foursquare_id'] : null;
-    }
-
-    public function getLocation()
-    {
-        return $this->location;
-    }
-
-    public function getLongitude()
-    {
-        return $this->longitude;
-    }
-
-    public function getLatitude()
-    {
-        return $this->latitude;
-    }
-
-    public function getTitle()
-    {
-        return $this->title;
-    }
-
-    public function getAddress()
-    {
-        return $this->address;
-    }
-
-    public function getFoursquareId()
-    {
-        return $this->foursquare_id;
+        return [
+            'location' => Location::class,
+        ];
     }
 }

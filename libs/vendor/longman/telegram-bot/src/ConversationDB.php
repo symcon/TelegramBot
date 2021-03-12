@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,17 +11,16 @@
 
 namespace Longman\TelegramBot;
 
+use Exception;
 use Longman\TelegramBot\Exception\TelegramException;
+use PDO;
 
-/**
- * Class ConversationDB
- */
 class ConversationDB extends DB
 {
     /**
-     * Initilize conversation table
+     * Initialize conversation table
      */
-    public static function initializeConversation()
+    public static function initializeConversation(): void
     {
         if (!defined('TB_CONVERSATION')) {
             define('TB_CONVERSATION', self::$table_prefix . 'conversation');
@@ -30,41 +30,48 @@ class ConversationDB extends DB
     /**
      * Select a conversation from the DB
      *
-     * @param int  $user_id
-     * @param int  $chat_id
-     * @param bool $limit
+     * @param int $user_id
+     * @param int $chat_id
+     * @param int $limit
      *
      * @return array|bool
+     * @throws TelegramException
      */
-    public static function selectConversation($user_id, $chat_id, $limit = null)
+    public static function selectConversation(int $user_id, int $chat_id, $limit = 0)
     {
         if (!self::isDbConnected()) {
             return false;
         }
 
         try {
-            $query = 'SELECT * FROM `' . TB_CONVERSATION . '` ';
-            $query .= 'WHERE `status` = :status ';
-            $query .= 'AND `chat_id` = :chat_id ';
-            $query .= 'AND `user_id` = :user_id ';
+            $sql = '
+              SELECT *
+              FROM `' . TB_CONVERSATION . '`
+              WHERE `status` = :status
+                AND `chat_id` = :chat_id
+                AND `user_id` = :user_id
+            ';
 
-            if (!is_null($limit)) {
-                $query .= ' LIMIT :limit';
+            if ($limit > 0) {
+                $sql .= ' LIMIT :limit';
             }
-            $sth = self::$pdo->prepare($query);
 
-            $active = 'active';
-            $sth->bindParam(':status', $active, \PDO::PARAM_STR);
-            $sth->bindParam(':user_id', $user_id, \PDO::PARAM_INT);
-            $sth->bindParam(':chat_id', $chat_id, \PDO::PARAM_INT);
-            $sth->bindParam(':limit', $limit, \PDO::PARAM_INT);
+            $sth = self::$pdo->prepare($sql);
+
+            $sth->bindValue(':status', 'active');
+            $sth->bindValue(':user_id', $user_id);
+            $sth->bindValue(':chat_id', $chat_id);
+
+            if ($limit > 0) {
+                $sth->bindValue(':limit', $limit, PDO::PARAM_INT);
+            }
+
             $sth->execute();
 
-            $results = $sth->fetchAll(\PDO::FETCH_ASSOC);
-        } catch (\Exception $e) {
+            return $sth->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
             throw new TelegramException($e->getMessage());
         }
-        return $results;
     }
 
     /**
@@ -75,8 +82,9 @@ class ConversationDB extends DB
      * @param string $command
      *
      * @return bool
+     * @throws TelegramException
      */
-    public static function insertConversation($user_id, $chat_id, $command)
+    public static function insertConversation(int $user_id, int $chat_id, string $command): bool
     {
         if (!self::isDbConnected()) {
             return false;
@@ -84,30 +92,25 @@ class ConversationDB extends DB
 
         try {
             $sth = self::$pdo->prepare('INSERT INTO `' . TB_CONVERSATION . '`
-                (
-                `status`, `user_id`, `chat_id`, `command`, `notes`, `created_at`, `updated_at`
-                )
-                VALUES (
-                :status, :user_id, :chat_id, :command, :notes, :date, :date
-                )
-               ');
-            $active = 'active';
-            //$notes = json_encode('');
-            $notes = '""';
-            $created_at = self::getTimestamp();
+                (`status`, `user_id`, `chat_id`, `command`, `notes`, `created_at`, `updated_at`)
+                VALUES
+                (:status, :user_id, :chat_id, :command, :notes, :created_at, :updated_at)
+            ');
 
-            $sth->bindParam(':status', $active);
-            $sth->bindParam(':command', $command);
-            $sth->bindParam(':user_id', $user_id);
-            $sth->bindParam(':chat_id', $chat_id);
-            $sth->bindParam(':notes', $notes);
-            $sth->bindParam(':date', $created_at);
+            $date = self::getTimestamp();
 
-            $status = $sth->execute();
-        } catch (\Exception $e) {
+            $sth->bindValue(':status', 'active');
+            $sth->bindValue(':command', $command);
+            $sth->bindValue(':user_id', $user_id);
+            $sth->bindValue(':chat_id', $chat_id);
+            $sth->bindValue(':notes', '[]');
+            $sth->bindValue(':created_at', $date);
+            $sth->bindValue(':updated_at', $date);
+
+            return $sth->execute();
+        } catch (Exception $e) {
             throw new TelegramException($e->getMessage());
         }
-        return $status;
     }
 
     /**
@@ -117,68 +120,13 @@ class ConversationDB extends DB
      * @param array $where_fields_values
      *
      * @return bool
+     * @throws TelegramException
      */
-    public static function updateConversation(array $fields_values, array $where_fields_values)
+    public static function updateConversation(array $fields_values, array $where_fields_values): bool
     {
-        return self::update(TB_CONVERSATION, $fields_values, $where_fields_values);
-    }
-
-    /**
-     * Update the conversation in the database
-     *
-     * @param string $table
-     * @param array  $fields_values
-     * @param array  $where_fields_values
-     *
-     * @todo This function is generic should be moved in DB.php
-     *
-     * @return bool
-     */
-    public static function update($table, array $fields_values, array $where_fields_values)
-    {
-        if (!self::isDbConnected()) {
-            return false;
-        }
-        //Auto update the field update_at
+        // Auto update the update_at field.
         $fields_values['updated_at'] = self::getTimestamp();
 
-        //Values
-        $update = '';
-        $tokens = [];
-        $tokens_counter = 0;
-        $a = 0;
-        foreach ($fields_values as $field => $value) {
-            if ($a) {
-                $update .= ', ';
-            }
-            ++$a;
-            ++$tokens_counter;
-            $update .= '`' . $field . '` = :' . $tokens_counter;
-            $tokens[':' . $tokens_counter] = $value;
-        }
-
-        //Where
-        $a = 0;
-        $where  = '';
-        foreach ($where_fields_values as $field => $value) {
-            if ($a) {
-                $where .= ' AND ';
-            } else {
-                ++$a;
-                $where .= 'WHERE ';
-            }
-            ++$tokens_counter;
-            $where .= '`' . $field .'`= :' . $tokens_counter;
-            $tokens[':' . $tokens_counter] = $value;
-        }
-
-        $query = 'UPDATE `' . $table . '` SET ' . $update . ' ' . $where;
-        try {
-            $sth = self::$pdo->prepare($query);
-            $status = $sth->execute($tokens);
-        } catch (\Exception $e) {
-            throw new TelegramException($e->getMessage());
-        }
-        return $status;
+        return self::update(TB_CONVERSATION, $fields_values, $where_fields_values);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,66 +11,22 @@
 
 namespace Longman\TelegramBot\Entities;
 
-use Longman\TelegramBot\Exception\TelegramException;
-
+/**
+ * Class User
+ *
+ * @link https://core.telegram.org/bots/api#user
+ *
+ * @method int    getId()                      Unique identifier for this user or bot
+ * @method bool   getIsBot()                   True, if this user is a bot
+ * @method string getFirstName()               User's or bot’s first name
+ * @method string getLastName()                Optional. User's or bot’s last name
+ * @method string getUsername()                Optional. User's or bot’s username
+ * @method string getLanguageCode()            Optional. IETF language tag of the user's language
+ * @method bool   getCanJoinGroups()           Optional. True, if the bot can be invited to groups. Returned only in getMe.
+ * @method bool   getCanReadAllGroupMessages() Optional. True, if privacy mode is disabled for the bot. Returned only in getMe.
+ * @method bool   getSupportsInlineQueries()   Optional. True, if the bot supports inline queries. Returned only in getMe.
+ */
 class User extends Entity
 {
 
-    protected $id;
-    protected $first_name;
-    protected $last_name;
-    protected $username;
-
-    /**
-     * User constructor.
-     *
-     * @param array $data
-     */
-    public function __construct(array $data)
-    {
-
-        $this->id = isset($data['id']) ? $data['id'] : null;
-        if (empty($this->id)) {
-            throw new TelegramException('id is empty!');
-        }
-
-        $this->first_name = isset($data['first_name']) ? $data['first_name'] : null;
-
-        $this->last_name = isset($data['last_name']) ? $data['last_name'] : null;
-        $this->username = isset($data['username']) ? $data['username'] : null;
-    }
-
-    public function getId()
-    {
-
-        return $this->id;
-    }
-
-    public function getFirstName()
-    {
-
-        return $this->first_name;
-    }
-
-    public function getLastName()
-    {
-
-        return $this->last_name;
-    }
-
-    public function getUsername()
-    {
-        return $this->username;
-    }
-
-    public function tryMention()
-    {
-        if (is_null($this->username)) {
-            if (!is_null($this->last_name)) {
-                return $this->first_name.' '.$this->last_name;
-            }
-            return $this->first_name;
-        }
-        return '@'.$this->username;
-    }
 }

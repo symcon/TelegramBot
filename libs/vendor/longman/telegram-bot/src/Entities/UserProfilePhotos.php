@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,52 +11,44 @@
 
 namespace Longman\TelegramBot\Entities;
 
-use Longman\TelegramBot\Exception\TelegramException;
-
+/**
+ * Class UserProfilePhotos
+ *
+ * @link https://core.telegram.org/bots/api#userprofilephotos
+ *
+ * @method int getTotalCount() Total number of profile pictures the target user has
+ */
 class UserProfilePhotos extends Entity
 {
-
-    protected $total_count;
-    protected $photos;
+    /**
+     * {@inheritdoc}
+     */
+    protected function subEntities(): array
+    {
+        return [
+            'photos' => PhotoSize::class,
+        ];
+    }
 
     /**
-     * UserProfilePhotos constructor.
+     * Requested profile pictures (in up to 4 sizes each)
      *
-     * @param array $data
+     * This method overrides the default getPhotos method and returns a nice array
+     *
+     * @return PhotoSize[][]
      */
-    public function __construct(array $data)
+    public function getPhotos(): array
     {
+        $all_photos = [];
 
-        $this->total_count = isset($data['total_count']) ? $data['total_count'] : null;
-        if ($this->total_count === null || !is_numeric($this->total_count)) {
-            throw new TelegramException('total_count is empty!');
-        }
-        $this->photos = isset($data['photos']) ? $data['photos'] : null;
-        if ($this->photos === null || !is_array($data['photos'])) {
-            throw new TelegramException('photos is empty!');
-        }
-
-        $photos = [];
-        foreach ($this->photos as $key => $photo) {
-            if (is_array($photo)) {
-                foreach ($photo as $photo_size) {
-                    $photos[$key][] = new PhotoSize($photo_size);
-                }
-            } else {
-                throw new TelegramException('photo is not an array!');
+        if ($these_photos = $this->getProperty('photos')) {
+            foreach ($these_photos as $photos) {
+                $all_photos[] = array_map(function ($photo) {
+                    return new PhotoSize($photo);
+                }, $photos);
             }
         }
 
-        $this->photos = $photos;
-    }
-
-    public function getTotalCount()
-    {
-        return $this->total_count;
-    }
-
-    public function getPhotos()
-    {
-        return $this->photos;
+        return $all_photos;
     }
 }

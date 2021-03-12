@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,66 +11,27 @@
 
 namespace Longman\TelegramBot\Entities;
 
-use Longman\TelegramBot\Exception\TelegramException;
-
+/**
+ * Class MessageEntity
+ *
+ * @link https://core.telegram.org/bots/api#messageentity
+ *
+ * @method string getType()     Type of the entity. Can be 'mention' (@username), 'hashtag' (#hashtag), 'cashtag' ($USD), 'bot_command' (/start@jobs_bot), 'url' (https://telegram.org), 'email' (do-not-reply@telegram.org), 'phone_number' (+1-212-555-0123), 'bold' (bold text), 'italic' (italic text), 'underline' (underlined text), 'strikethrough' (strikethrough text), 'code' (monowidth string), 'pre' (monowidth block), 'text_link' (for clickable text URLs), 'text_mention' (for users without usernames)
+ * @method int    getOffset()   Offset in UTF-16 code units to the start of the entity
+ * @method int    getLength()   Length of the entity in UTF-16 code units
+ * @method string getUrl()      Optional. For "text_link" only, url that will be opened after user taps on the text
+ * @method User   getUser()     Optional. For "text_mention" only, the mentioned user
+ * @method string getLanguage() Optional. For "pre" only, the programming language of the entity text
+ */
 class MessageEntity extends Entity
 {
-    protected $type;
-    protected $offset;
-    protected $length;
-    protected $url;
-    protected $user;
-
     /**
-     * MessageEntity constructor.
-     *
-     * @todo check for type value from this list: https://core.telegram.org/bots/api#messageentity
-     *
-     * @param array $data
+     * {@inheritdoc}
      */
-    public function __construct(array $data)
+    protected function subEntities(): array
     {
-        $this->type = isset($data['type']) ? $data['type'] : null;
-        if (empty($this->type)) {
-            throw new TelegramException('type is empty!');
-        }
-
-        $this->offset = isset($data['offset']) ? $data['offset'] : null;
-        if ($this->offset === '') {
-            throw new TelegramException('offset is empty!');
-        }
-
-        $this->length = isset($data['length']) ? $data['length'] : null;
-        if ($this->length === '') {
-            throw new TelegramException('length is empty!');
-        }
-
-        $this->url = isset($data['url']) ? $data['url'] : null;
-        $this->user = isset($data['user']) ? new User($data['user']) : null;
-    }
-
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    public function getOffset()
-    {
-        return $this->offset;
-    }
-
-    public function getLength()
-    {
-        return $this->length;
-    }
-
-    public function getUrl()
-    {
-        return $this->url;
-    }
-
-    public function getUser()
-    {
-        return $this->user;
+        return [
+            'user' => User::class,
+        ];
     }
 }

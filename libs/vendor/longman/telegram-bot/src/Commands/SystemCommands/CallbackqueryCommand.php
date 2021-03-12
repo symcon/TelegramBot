@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -11,41 +12,63 @@
 namespace Longman\TelegramBot\Commands\SystemCommands;
 
 use Longman\TelegramBot\Commands\SystemCommand;
-use Longman\TelegramBot\Request;
+use Longman\TelegramBot\Entities\ServerResponse;
 
 /**
  * Callback query command
  */
 class CallbackqueryCommand extends SystemCommand
 {
-    /**#@+
-     * {@inheritdoc}
+    /**
+     * @var callable[]
      */
-    protected $name = 'callbackquery';
-    protected $description = 'Reply to callback query';
-    protected $version = '1.0.0';
-    /**#@-*/
+    protected static $callbacks = [];
 
     /**
-     * {@inheritdoc}
+     * @var string
      */
-    public function execute()
+    protected $name = 'callbackquery';
+
+    /**
+     * @var string
+     */
+    protected $description = 'Reply to callback query';
+
+    /**
+     * @var string
+     */
+    protected $version = '1.0.0';
+
+    /**
+     * Command execute method
+     *
+     * @return ServerResponse
+     */
+    public function execute(): ServerResponse
     {
-        $update = $this->getUpdate();
-        $callback_query = $update->getCallbackQuery();
-        $callback_query_id = $callback_query->getId();
-        $callback_data = $callback_query->getData();
+        //$callback_query = $this->getCallbackQuery();
+        //$user_id        = $callback_query->getFrom()->getId();
+        //$query_id       = $callback_query->getId();
+        //$query_data     = $callback_query->getData();
 
-        $data['callback_query_id'] = $callback_query_id;
+        $answer         = null;
+        $callback_query = $this->getCallbackQuery();
 
-        if ($callback_data == 'thumb up') {
-            $data['text'] = 'Hello World!';
-            $data['show_alert'] = true;
-        } else {
-            $data['text'] = 'Hello World!';
-            $data['show_alert'] = false;
+        // Call all registered callbacks.
+        foreach (self::$callbacks as $callback) {
+            $answer = $callback($callback_query);
         }
 
-        return Request::answerCallbackQuery($data);
+        return ($answer instanceof ServerResponse) ? $answer : $callback_query->answer();
+    }
+
+    /**
+     * Add a new callback handler for callback queries.
+     *
+     * @param $callback
+     */
+    public static function addCallbackHandler($callback): void
+    {
+        self::$callbacks[] = $callback;
     }
 }

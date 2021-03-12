@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -11,6 +12,9 @@
 namespace Longman\TelegramBot\Commands\AdminCommands;
 
 use Longman\TelegramBot\Commands\AdminCommand;
+use Longman\TelegramBot\Entities\Message;
+use Longman\TelegramBot\Entities\ServerResponse;
+use Longman\TelegramBot\Exception\TelegramException;
 use Longman\TelegramBot\Request;
 
 /**
@@ -18,80 +22,92 @@ use Longman\TelegramBot\Request;
  */
 class SendtoallCommand extends AdminCommand
 {
-    /**#@+
-     * {@inheritdoc}
+    /**
+     * @var string
      */
     protected $name = 'sendtoall';
-    protected $description = 'Send the message to all the user\'s bot';
+
+    /**
+     * @var string
+     */
+    protected $description = 'Send the message to all of the bot\'s users';
+
+    /**
+     * @var string
+     */
     protected $usage = '/sendtoall <message to send>';
-    protected $version = '1.2.1';
+
+    /**
+     * @var string
+     */
+    protected $version = '1.5.0';
+
+    /**
+     * @var bool
+     */
     protected $need_mysql = true;
-    /**#@-*/
 
     /**
      * Execute command
      *
-     * @return boolean
+     * @return ServerResponse
+     * @throws TelegramException
      */
-    public function execute()
+    public function execute(): ServerResponse
     {
-        $message = $this->getMessage();
-
-        $chat_id = $message->getChat()->getId();
-        $text = $message->getText(true);
+        $text = $this->getMessage()->getText(true);
 
         if ($text === '') {
-            $text = 'Write the message to send: /sendtoall <message>';
-        } else {
-            $results = Request::sendToActiveChats(
-                'sendMessage', //callback function to execute (see Request.php methods)
-                ['text' => $text], //Param to evaluate the request
-                true, //Send to groups (group chat)
-                true, //Send to super groups chats (super group chat)
-                true, //Send to users (single chat)
-                null, //'yyyy-mm-dd hh:mm:ss' date range from
-                null  //'yyyy-mm-dd hh:mm:ss' date range to
-            );
-
-            $tot = 0;
-            $fail = 0;
-
-            $text = 'Message sent to:' . "\n";
-            foreach ($results as $result) {
-                $status = '';
-                $type = '';
-                if ($result->isOk()) {
-                    $status = '✔️';
-
-                    $ServerResponse = $result->getResult();
-                    $chat = $ServerResponse->getChat();
-                    if ($chat->isPrivateChat()) {
-                        $name = $chat->getFirstName();
-                        $type = 'user';
-                    } else {
-                        $name = $chat->getTitle();
-                        $type = 'chat';
-                    }
-                } else {
-                    $status = '✖️';
-                    ++$fail;
-                }
-                ++$tot;
-
-                $text .= $tot . ') ' . $status . ' ' . $type . ' ' . $name . "\n";
-            }
-            $text .= 'Delivered: ' . ($tot - $fail) . '/' . $tot . "\n";
-
-            if ($tot === 0) {
-                $text = 'No users or chats found..';
-            }
+            return $this->replyToChat('Usage: ' . $this->getUsage());
         }
 
-        $data = [
-            'chat_id' => $chat_id,
-            'text'    => $text,
-        ];
+        /** @var ServerResponse[] $results */
+        $results = Request::sendToActiveChats(
+            'sendMessage',     //callback function to execute (see Request.php methods)
+            ['text' => $text], //Param to evaluate the request
+            [
+                'groups'      => true,
+                'supergroups' => true,
+                'channels'    => false,
+                'users'       => true,
+            ]
+        );
 
-        return Request::sendMessage($data);
+        if (empty($results)) {
+            return $this->replyToChat('No users or chats found.');
+        }
+
+        $total  = 0;
+        $failed = 0;
+
+        $text = 'Message sent to:' . PHP_EOL;
+
+        foreach ($results as $result) {
+            $name = '';
+            $type = '';
+            if ($result->isOk()) {
+                $status = '✔️';
+
+                /** @var Message $message */
+                $message = $result->getResult();
+                $chat    = $message->getChat();
+                if ($chat->isPrivateChat()) {
+                    $name = $chat->getFirstName();
+                    $type = 'user';
+                } else {
+                    $name = $chat->getTitle();
+                    $type = 'chat';
+                }
+            } else {
+                $status = '✖️';
+                ++$failed;
+            }
+            ++$total;
+
+            $text .= $total . ') ' . $status . ' ' . $type . ' ' . $name . PHP_EOL;
+        }
+        $text .= 'Delivered: ' . ($total - $failed) . '/' . $total . PHP_EOL;
+
+        return $this->replyToChat($text);
     }
 }

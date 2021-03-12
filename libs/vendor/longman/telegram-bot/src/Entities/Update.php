@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,108 +11,80 @@
 
 namespace Longman\TelegramBot\Entities;
 
-use Longman\TelegramBot\Exception\TelegramException;
+use Longman\TelegramBot\Entities\Payments\PreCheckoutQuery;
+use Longman\TelegramBot\Entities\Payments\ShippingQuery;
 
+/**
+ * Class Update
+ *
+ * @link https://core.telegram.org/bots/api#update
+ *
+ * @method int                 getUpdateId()           The update's unique identifier. Update identifiers start from a certain positive number and increase sequentially. This ID becomes especially handy if you’re using Webhooks, since it allows you to ignore repeated updates or to restore the correct update sequence, should they get out of order.
+ * @method Message             getMessage()            Optional. New incoming message of any kind — text, photo, sticker, etc.
+ * @method Message             getEditedMessage()      Optional. New version of a message that is known to the bot and was edited
+ * @method Message             getChannelPost()        Optional. New post in the channel, can be any kind — text, photo, sticker, etc.
+ * @method Message             getEditedChannelPost()  Optional. New version of a post in the channel that is known to the bot and was edited
+ * @method InlineQuery         getInlineQuery()        Optional. New incoming inline query
+ * @method ChosenInlineResult  getChosenInlineResult() Optional. The result of an inline query that was chosen by a user and sent to their chat partner.
+ * @method CallbackQuery       getCallbackQuery()      Optional. New incoming callback query
+ * @method ShippingQuery       getShippingQuery()      Optional. New incoming shipping query. Only for invoices with flexible price
+ * @method PreCheckoutQuery    getPreCheckoutQuery()   Optional. New incoming pre-checkout query. Contains full information about checkout
+ * @method Poll                getPoll()               Optional. New poll state. Bots receive only updates about polls, which are sent or stopped by the bot
+ * @method PollAnswer          getPollAnswer()         Optional. A user changed their answer in a non-anonymous poll. Bots receive new votes only in polls that were sent by the bot itself.
+ */
 class Update extends Entity
 {
-
-    protected $update_id;
-    protected $message;
-    protected $edited_message;
-    protected $inline_query;
-    protected $chosen_inline_result;
-    protected $callback_query;
-
-    private $update_type;
+    /**
+     * {@inheritdoc}
+     */
+    protected function subEntities(): array
+    {
+        return [
+            'message'              => Message::class,
+            'edited_message'       => EditedMessage::class,
+            'channel_post'         => ChannelPost::class,
+            'edited_channel_post'  => EditedChannelPost::class,
+            'inline_query'         => InlineQuery::class,
+            'chosen_inline_result' => ChosenInlineResult::class,
+            'callback_query'       => CallbackQuery::class,
+            'shipping_query'       => ShippingQuery::class,
+            'pre_checkout_query'   => PreCheckoutQuery::class,
+            'poll'                 => Poll::class,
+            'poll_answer'          => PollAnswer::class,
+        ];
+    }
 
     /**
-     * Update constructor.
+     * Get the update type based on the set properties
      *
-     * @param array $data
-     * @param $bot_name
+     * @return string|null
      */
-    public function __construct(array $data, $bot_name)
+    public function getUpdateType(): ?string
     {
-
-        $this->bot_name = $bot_name;
-
-        $update_id = isset($data['update_id']) ? $data['update_id'] : null;
-        $this->update_id = $update_id;
-
-        $this->message = isset($data['message']) ? $data['message'] : null;
-        if (!empty($this->message)) {
-            $this->message = new Message($this->message, $bot_name);
-            $this->update_type = 'message';
+        $types = array_keys($this->subEntities());
+        foreach ($types as $type) {
+            if ($this->getProperty($type)) {
+                return $type;
+            }
         }
 
-        $this->edited_message = isset($data['edited_message']) ? $data['edited_message'] : null;
-        if (!empty($this->edited_message)) {
-            $this->edited_message = new Message($this->edited_message, $bot_name);
-            $this->update_type = 'edited_message';
-        }
-
-        if (empty($update_id)) {
-            throw new TelegramException('update_id is empty!');
-        }
-
-        $this->inline_query = isset($data['inline_query']) ? $data['inline_query'] : null;
-        if (!empty($this->inline_query)) {
-            $this->inline_query = new InlineQuery($this->inline_query);
-            $this->update_type = 'inline_query';
-        }
-
-        $this->chosen_inline_result = isset($data['chosen_inline_result']) ? $data['chosen_inline_result'] : null;
-        if (!empty($this->chosen_inline_result)) {
-            $this->chosen_inline_result = new ChosenInlineResult($this->chosen_inline_result);
-            $this->update_type = 'chosen_inline_result';
-        }
-
-        $this->callback_query = isset($data['callback_query']) ? $data['callback_query'] : null;
-        if (!empty($this->callback_query)) {
-            $this->callback_query = new CallbackQuery($this->callback_query);
-            $this->update_type = 'callback_query';
-        }
+        return null;
     }
 
-    public function getUpdateId()
-    {
-        return $this->update_id;
-    }
-
-    public function getMessage()
-    {
-        return $this->message;
-    }
-    public function getEditedMessage()
-    {
-        return $this->edited_message;
-    }
-    public function getInlineQuery()
-    {
-        return $this->inline_query;
-    }
-    public function getCallbackQuery()
-    {
-        return $this->callback_query;
-    }
-    public function getChosenInlineResult()
-    {
-        return $this->chosen_inline_result;
-    }
-    public function getUpdateType()
-    {
-        return $this->update_type;
-    }
+    /**
+     * Get update content
+     *
+     * @return CallbackQuery|ChosenInlineResult|InlineQuery|Message
+     */
     public function getUpdateContent()
     {
-        if ($this->update_type == 'message') {
-            return $this->getMessage();
-        } elseif ($this->update_type == 'inline_query') {
-            return $this->getInlineQuery();
-        } elseif ($this->update_type == 'chosen_inline_result') {
-            return $this->getChosenInlineResult();
-        } elseif ($this->update_type == 'callback_query') {
-            return $this->getCallbackQuery();
+        if ($update_type = $this->getUpdateType()) {
+            // Instead of just getting the property as an array,
+            // use the __call method to get the correct Entity object.
+            $method = 'get' . str_replace('_', '', ucwords($update_type, '_'));
+            return $this->$method();
         }
+
+        return null;
     }
 }

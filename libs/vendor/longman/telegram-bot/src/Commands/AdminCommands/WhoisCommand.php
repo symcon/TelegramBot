@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -15,6 +16,10 @@ namespace Longman\TelegramBot\Commands\AdminCommands;
 use Longman\TelegramBot\Commands\AdminCommand;
 use Longman\TelegramBot\DB;
 use Longman\TelegramBot\Entities\Chat;
+use Longman\TelegramBot\Entities\PhotoSize;
+use Longman\TelegramBot\Entities\ServerResponse;
+use Longman\TelegramBot\Entities\UserProfilePhotos;
+use Longman\TelegramBot\Exception\TelegramException;
 use Longman\TelegramBot\Request;
 
 /**
@@ -22,28 +27,46 @@ use Longman\TelegramBot\Request;
  */
 class WhoisCommand extends AdminCommand
 {
-    /**#@+
-     * {@inheritdoc}
+    /**
+     * @var string
      */
     protected $name = 'whois';
-    protected $description = 'Lookup user or group info';
-    protected $usage = '/whois <id> or /whois <search string>';
-    protected $version = '1.1.0';
-    protected $need_mysql = true;
-    /**#@-*/
 
     /**
-     * {@inheritdoc}
+     * @var string
      */
-    public function execute()
+    protected $description = 'Lookup user or group info';
+
+    /**
+     * @var string
+     */
+    protected $usage = '/whois <id> or /whois <search string>';
+
+    /**
+     * @var string
+     */
+    protected $version = '1.3.0';
+
+    /**
+     * @var bool
+     */
+    protected $need_mysql = true;
+
+    /**
+     * Command execute method
+     *
+     * @return ServerResponse
+     * @throws TelegramException
+     */
+    public function execute(): ServerResponse
     {
         $message = $this->getMessage();
 
         $chat_id = $message->getChat()->getId();
         $command = $message->getCommand();
-        $text = trim($message->getText(true));
+        $text    = trim($message->getText(true));
 
-        $data = [ 'chat_id' => $chat_id ];
+        $data = ['chat_id' => $chat_id];
 
         //No point in replying to messages in private chats
         if (!$message->getChat()->isPrivateChat()) {
@@ -54,7 +77,7 @@ class WhoisCommand extends AdminCommand
             $text = substr($command, 5);
 
             //We need that '-' now, bring it back
-            if ((substr($text, 0, 1) == 'g')) {
+            if (strpos($text, 'g') === 0) {
                 $text = str_replace('g', '-', $text);
             }
         }
@@ -62,89 +85,96 @@ class WhoisCommand extends AdminCommand
         if ($text === '') {
             $text = 'Provide the id to lookup: /whois <id>';
         } else {
-            $user_id = $text;
+            $user_id    = $text;
+            $chat       = null;
+            $created_at = null;
+            $updated_at = null;
+            $result     = null;
 
             if (is_numeric($text)) {
-                $result = DB::selectChats(
-                    true, //Select groups (group chat)
-                    true, //Select supergroups (super group chat)
-                    true, //Select users (single chat)
-                    null, //'yyyy-mm-dd hh:mm:ss' date range from
-                    null, //'yyyy-mm-dd hh:mm:ss' date range to
-                    $user_id //Specific chat_id to select
-                );
+                $results = DB::selectChats([
+                    'groups'      => true,
+                    'supergroups' => true,
+                    'channels'    => true,
+                    'users'       => true,
+                    'chat_id'     => $user_id, //Specific chat_id to select
+                ]);
 
-                $result = $result[0];
+                if (!empty($results)) {
+                    $result = reset($results);
+                }
             } else {
-                $results = DB::selectChats(
-                    true, //Select groups (group chat)
-                    true, //Select supergroups (super group chat)
-                    true, //Select users (single chat)
-                    null, //'yyyy-mm-dd hh:mm:ss' date range from
-                    null, //'yyyy-mm-dd hh:mm:ss' date range to
-                    null, //Specific chat_id to select
-                    $text //Text to search in user/group name
-                );
+                $results = DB::selectChats([
+                    'groups'      => true,
+                    'supergroups' => true,
+                    'channels'    => true,
+                    'users'       => true,
+                    'text'        => $text //Text to search in user/group name
+                ]);
 
-                if (is_array($results) && count($results) == 1) {
-                    $result = $results[0];
+                if (is_array($results) && count($results) === 1) {
+                    $result = reset($results);
                 }
             }
 
             if (is_array($result)) {
-                $result['id'] = $result['chat_id'];
-                $chat = new Chat($result);
+                $result['id']       = $result['chat_id'];
+                $result['username'] = $result['chat_username'];
+                $chat               = new Chat($result);
 
-                $user_id = $result['id'];
+                $user_id    = $result['id'];
                 $created_at = $result['chat_created_at'];
                 $updated_at = $result['chat_updated_at'];
-                $old_id = $result['old_id'];
+                $old_id     = $result['old_id'];
             }
 
-            if ($chat != null) {
+            if ($chat !== null) {
                 if ($chat->isPrivateChat()) {
-                    $text = 'User ID: ' . $user_id . "\n";
-                    $text .= 'Name: ' . $chat->getFirstName() . ' ' . $chat->getLastName() . "\n";
+                    $text = 'User ID: ' . $user_id . PHP_EOL;
+                    $text .= 'Name: ' . $chat->getFirstName() . ' ' . $chat->getLastName() . PHP_EOL;
 
-                    if ($chat->getUsername() != '') {
-                        $text .= 'Username: @' . $chat->getUsername() . "\n";
+                    $username = $chat->getUsername();
+                    if ($username !== null && $username !== '') {
+                        $text .= 'Username: @' . $username . PHP_EOL;
                     }
 
-                    $text .= 'First time seen: ' . $created_at . "\n";
-                    $text .= 'Last activity: ' . $updated_at . "\n";
+                    $text .= 'First time seen: ' . $created_at . PHP_EOL;
+                    $text .= 'Last activity: ' . $updated_at . PHP_EOL;
 
                     //Code from Whoami command
-                    $limit = 10;
-                    $offset = null;
-                    $ServerResponse = Request::getUserProfilePhotos([
-                        'user_id' => $user_id ,
-                        'limit'   => $limit,
-                        'offset'  => $offset,
-                    ]);
+                    $limit    = 10;
+                    $offset   = null;
+                    $response = Request::getUserProfilePhotos(
+                        [
+                            'user_id' => $user_id,
+                            'limit'   => $limit,
+                            'offset'  => $offset,
+                        ]
+                    );
 
-                    if ($ServerResponse->isOk()) {
-                        $UserProfilePhoto = $ServerResponse->getResult();
-                        $totalcount = $UserProfilePhoto->getTotalCount();
-                    } else {
-                        $totalcount = 0;
-                    }
+                    if ($response->isOk()) {
+                        /** @var UserProfilePhotos $user_profile_photos */
+                        $user_profile_photos = $response->getResult();
 
-                    if ($totalcount > 0) {
-                        $photos = $UserProfilePhoto->getPhotos();
-                        $photo = $photos[0][2];
-                        $file_id = $photo->getFileId();
+                        if ($user_profile_photos->getTotalCount() > 0) {
+                            $photos = $user_profile_photos->getPhotos();
 
-                        $data['photo'] = $file_id;
-                        $data['caption'] = $text;
+                            /** @var PhotoSize $photo */
+                            $photo   = $photos[0][2];
+                            $file_id = $photo->getFileId();
 
-                        return Request::sendPhoto($data);
+                            $data['photo']   = $file_id;
+                            $data['caption'] = $text;
+
+                            return Request::sendPhoto($data);
+                        }
                     }
                 } elseif ($chat->isGroupChat()) {
-                    $text = 'Chat ID: ' . $user_id . (!empty($old_id) ? ' (previously: '.$old_id.')' : ''). "\n";
-                    $text .= 'Type: ' . ucfirst($chat->getType()) . "\n";
-                    $text .= 'Title: ' . $chat->getTitle() . "\n";
-                    $text .= 'First time added to group: ' . $created_at . "\n";
-                    $text .= 'Last activity: ' . $updated_at . "\n";
+                    $text = 'Chat ID: ' . $user_id . (!empty($old_id) ? ' (previously: ' . $old_id . ')' : '') . PHP_EOL;
+                    $text .= 'Type: ' . ucfirst($chat->getType()) . PHP_EOL;
+                    $text .= 'Title: ' . $chat->getTitle() . PHP_EOL;
+                    $text .= 'First time added to group: ' . $created_at . PHP_EOL;
+                    $text .= 'Last activity: ' . $updated_at . PHP_EOL;
                 }
             } elseif (is_array($results) && count($results) > 1) {
                 $text = 'Multiple chats matched!';
@@ -154,6 +184,7 @@ class WhoisCommand extends AdminCommand
         }
 
         $data['text'] = $text;
+
         return Request::sendMessage($data);
     }
 }

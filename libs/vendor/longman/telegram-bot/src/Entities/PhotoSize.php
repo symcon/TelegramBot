@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,59 +11,18 @@
 
 namespace Longman\TelegramBot\Entities;
 
-use Longman\TelegramBot\Exception\TelegramException;
-
+/**
+ * Class PhotoSize
+ *
+ * @link https://core.telegram.org/bots/api#photosize
+ *
+ * @method string getFileId()       Identifier for this file, which can be used to download or reuse the file
+ * @method string getFileUniqueId() Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
+ * @method int    getWidth()        Photo width
+ * @method int    getHeight()       Photo height
+ * @method int    getFileSize()     Optional. File size
+ */
 class PhotoSize extends Entity
 {
-    protected $file_id;
-    protected $width;
-    protected $height;
-    protected $file_size;
-    
-    /**
-     * PhotoSize constructor.
-     *
-     * @param array $data
-     */
-    public function __construct(array $data)
-    {
 
-        $this->file_id = isset($data['file_id']) ? $data['file_id'] : null;
-        if (empty($this->file_id)) {
-            throw new TelegramException('file_id is empty!');
-        }
-
-        $this->width = isset($data['width']) ? $data['width'] : null;
-        if (empty($this->width)) {
-            throw new TelegramException('width is empty!');
-        }
-
-        $this->height = isset($data['height']) ? $data['height'] : null;
-        if (empty($this->height)) {
-            throw new TelegramException('height is empty!');
-        }
-
-        $this->file_size = isset($data['file_size']) ? $data['file_size'] : null;
-
-    }
-
-    public function getFileId()
-    {
-        return $this->file_id;
-    }
-
-    public function getWidth()
-    {
-         return $this->width;
-    }
-
-    public function getHeight()
-    {
-         return $this->height;
-    }
-
-    public function getFileSize()
-    {
-         return $this->file_size;
-    }
 }

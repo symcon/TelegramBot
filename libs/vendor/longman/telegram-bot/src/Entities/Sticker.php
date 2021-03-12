@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,78 +11,32 @@
 
 namespace Longman\TelegramBot\Entities;
 
-use Longman\TelegramBot\Exception\TelegramException;
-
+/**
+ * Class Sticker
+ *
+ * @link https://core.telegram.org/bots/api#sticker
+ *
+ * @method string       getFileId()       Identifier for this file, which can be used to download or reuse the file
+ * @method string       getFileUniqueId() Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
+ * @method int          getWidth()        Sticker width
+ * @method int          getHeight()       Sticker height
+ * @method bool         getIsAnimated()   True, if the sticker is animated
+ * @method PhotoSize    getThumb()        Optional. Sticker thumbnail in .webp or .jpg format
+ * @method string       getEmoji()        Optional. Emoji associated with the sticker
+ * @method string       getSetName()      Optional. Name of the sticker set to which the sticker belongs
+ * @method MaskPosition getMaskPosition() Optional. For mask stickers, the position where the mask should be placed
+ * @method int          getFileSize()     Optional. File size
+ */
 class Sticker extends Entity
 {
-    protected $file_id;
-    protected $width;
-    protected $height;
-    protected $thumb;
-    protected $emoji;
-    protected $file_size;
-
     /**
-     * Sticker constructor.
-     *
-     * @param array $data
+     * {@inheritdoc}
      */
-    public function __construct(array $data)
+    protected function subEntities(): array
     {
-
-        $this->file_id = isset($data['file_id']) ? $data['file_id'] : null;
-        if (empty($this->file_id)) {
-            throw new TelegramException('file_id is empty!');
-        }
-
-        $this->width = isset($data['width']) ? $data['width'] : null;
-        if (empty($this->width)) {
-            throw new TelegramException('width is empty!');
-        }
-
-        $this->height = isset($data['height']) ? $data['height'] : null;
-        if (empty($this->height)) {
-            throw new TelegramException('height is empty!');
-        }
-
-        $this->thumb = isset($data['thumb']) ? $data['thumb'] : null;
-        if (empty($this->thumb)) {
-            throw new TelegramException('thumb is empty!');
-        }
-        $this->thumb = new PhotoSize($this->thumb);
-
-        $this->emoji = isset($data['emoji']) ? $data['emoji'] : null;
-
-        $this->file_size = isset($data['file_size']) ? $data['file_size'] : null;
-    }
-
-    public function getFileId()
-    {
-        return $this->file_id;
-    }
-
-    public function getWidth()
-    {
-         return $this->width;
-    }
-
-    public function getHeight()
-    {
-         return $this->height;
-    }
-
-    public function getThumb()
-    {
-         return $this->thumb;
-    }
-
-    public function getEmoji()
-    {
-         return $this->emoji;
-    }
-
-    public function getFileSize()
-    {
-         return $this->file_size;
+        return [
+            'thumb'         => PhotoSize::class,
+            'mask_position' => MaskPosition::class,
+        ];
     }
 }

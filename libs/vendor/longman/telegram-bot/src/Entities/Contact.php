@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,53 +11,18 @@
 
 namespace Longman\TelegramBot\Entities;
 
-use Longman\TelegramBot\Exception\TelegramException;
-
+/**
+ * Class Contact
+ *
+ * @link https://core.telegram.org/bots/api#contact
+ *
+ * @method string getPhoneNumber() Contact's phone number
+ * @method string getFirstName()   Contact's first name
+ * @method string getLastName()    Optional. Contact's last name
+ * @method int    getUserId()      Optional. Contact's user identifier in Telegram
+ * @method string getVcard()       Optional. Additional data about the contact in the form of a vCard
+ */
 class Contact extends Entity
 {
-    protected $phone_number;
-    protected $first_name;
-    protected $last_name;
-    protected $user_id;
 
-    /**
-     * Contact constructor.
-     *
-     * @param array $data
-     */
-    public function __construct(array $data)
-    {
-        $this->phone_number = isset($data['phone_number']) ? $data['phone_number'] : null;
-        if (empty($this->phone_number)) {
-            throw new TelegramException('phone_number is empty!');
-        }
-
-        $this->first_name = isset($data['first_name']) ? $data['first_name'] : null;
-        if (empty($this->first_name)) {
-            throw new TelegramException('first_name is empty!');
-        }
-
-        $this->last_name = isset($data['last_name']) ? $data['last_name'] : null;
-        $this->user_id = isset($data['user_id']) ? $data['user_id'] : null;
-    }
-
-    public function getPhoneNumber()
-    {
-        return $this->phone_number;
-    }
-
-    public function getFirstName()
-    {
-        return $this->first_name;
-    }
-
-    public function getLastName()
-    {
-        return $this->last_name;
-    }
-
-    public function getUserId()
-    {
-        return $this->user_id;
-    }
 }

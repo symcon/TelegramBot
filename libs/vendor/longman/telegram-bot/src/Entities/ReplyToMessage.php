@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,22 +11,25 @@
 
 namespace Longman\TelegramBot\Entities;
 
+/**
+ * Class ReplyToMessage
+ *
+ * @todo Is this even required?!
+ */
 class ReplyToMessage extends Message
 {
-
     /**
      * ReplyToMessage constructor.
      *
-     * @param array $data
-     * @param $bot_name
+     * @param array  $data
+     * @param string $bot_username
      */
-    public function __construct(array $data, $bot_name)
+    public function __construct(array $data, string $bot_username = '')
     {
-
         //As explained in the documentation
         //Reply to message can't contain other reply to message entities
-        $reply_to_message = null;
+        unset($data['reply_to_message']);
 
-        $this->init($data, $bot_name);
+        parent::__construct($data, $bot_username);
     }
 }

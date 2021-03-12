@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,69 +11,45 @@
 
 namespace Longman\TelegramBot\Entities;
 
-use Longman\TelegramBot\Exception\TelegramException;
+use Longman\TelegramBot\Request;
 
+/**
+ * Class CallbackQuery.
+ *
+ * @link https://core.telegram.org/bots/api#callbackquery
+ *
+ * @method string  getId()              Unique identifier for this query
+ * @method User    getFrom()            Sender
+ * @method Message getMessage()         Optional. Message with the callback button that originated the query. Note that message content and message date will not be available if the message is too old
+ * @method string  getInlineMessageId() Optional. Identifier of the message sent via the bot in inline mode, that originated the query
+ * @method string  getChatInstance()    Global identifier, uniquely corresponding to the chat to which the message with the callback button was sent. Useful for high scores in games.
+ * @method string  getData()            Data associated with the callback button. Be aware that a bad client can send arbitrary data in this field
+ * @method string  getGameShortName()   Optional. Short name of a Game to be returned, serves as the unique identifier for the game
+ */
 class CallbackQuery extends Entity
 {
-    protected $id;
-    protected $from;
-    protected $message;
-    protected $inline_message_id;
-    protected $data;
+    /**
+     * {@inheritdoc}
+     */
+    protected function subEntities(): array
+    {
+        return [
+            'from'    => User::class,
+            'message' => Message::class,
+        ];
+    }
 
     /**
-     * CallbackQuery constructor.
+     * Answer this callback query.
      *
      * @param array $data
+     *
+     * @return ServerResponse
      */
-    public function __construct(array $data)
+    public function answer(array $data = []): ServerResponse
     {
-        $this->id = isset($data['id']) ? $data['id'] : null;
-        if (empty($this->id)) {
-            throw new TelegramException('id is empty!');
-        }
-
-        $this->from = isset($data['from']) ? $data['from'] : null;
-        if (empty($this->from)) {
-            throw new TelegramException('from is empty!');
-        }
-        $this->from = new User($this->from);
-
-        $this->message = isset($data['message']) ? $data['message'] : null;
-        if (!empty($this->message)) {
-            $this->message = new Message($this->message, $this->getBotName());
-        }
-
-        $this->inline_message_id = isset($data['inline_message_id']) ? $data['inline_message_id'] : null;
-
-        $this->data = isset($data['data']) ? $data['data'] : null;
-        if (empty($this->data)) {
-            throw new TelegramException('data is empty!');
-        }
-    }
-
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    public function getFrom()
-    {
-        return $this->from;
-    }
-
-    public function getMessage()
-    {
-        return $this->message;
-    }
-
-    public function getInlineMessageId()
-    {
-        return $this->inline_message_id;
-    }
-
-    public function getData()
-    {
-        return $this->data;
+        return Request::answerCallbackQuery(array_merge([
+            'callback_query_id' => $this->getId(),
+        ], $data));
     }
 }

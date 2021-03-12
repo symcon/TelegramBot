@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the TelegramBot package.
  *
@@ -10,9 +11,6 @@
 
 namespace Longman\TelegramBot\Commands;
 
-/**
- * Abstract User Command Class
- */
 abstract class UserCommand extends Command
 {
 
