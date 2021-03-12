@@ -53,22 +53,10 @@ class TelegramBot extends WebHookModule
 
     public function SendMessage(string $Text)
     {
-        try {
-            $telegram = new Longman\TelegramBot\Telegram($this->ReadPropertyString('BotApiKey'), $this->ReadPropertyString('BotUsername'));
-
-            // Send message to everyone
-            $recipients = json_decode($this->ReadPropertyString('AllowList'), true);
-            foreach ($recipients as $recipient) {
-                $result = Longman\TelegramBot\Request::sendMessage([
-                    'chat_id' => $recipient['UserID'],
-                    'text'    => $Text,
-                ]);
-                if (!$result->isOk()) {
-                    echo $this->Translate('Sending message failed!');
-                }
-            }
-        } catch (Longman\TelegramBot\Exception\TelegramException $e) {
-            echo $e->getMessage();
+        // Send message to everyone
+        $recipients = json_decode($this->ReadPropertyString('AllowList'), true);
+        foreach ($recipients as $recipient) {
+            $this->SendMessageEx($Text, $recipient['UserID']);
         }
     }
 
@@ -78,18 +66,50 @@ class TelegramBot extends WebHookModule
             $telegram = new Longman\TelegramBot\Telegram($this->ReadPropertyString('BotApiKey'), $this->ReadPropertyString('BotUsername'));
 
             // Try to find the name and map to ChatID
-            $recipients = json_decode($this->ReadPropertyString('AllowList'), true);
-            foreach ($recipients as $recipient) {
-                if ($recipient['Name'] == $NameOrChatID) {
-                    $NameOrChatID = $recipient['UserID'];
-                    break;
-                }
-            }
+            $NameOrChatID = $this->NameToUserID($NameOrChatID);
 
             // Send message
             $result = Longman\TelegramBot\Request::sendMessage([
                 'chat_id' => $NameOrChatID,
                 'text'    => $Text,
+            ]);
+
+            if (!$result->isOk()) {
+                echo $this->Translate('Sending message failed!');
+            }
+        } catch (Longman\TelegramBot\Exception\TelegramException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function SendMedia(int $MediaID)
+    {
+        // Send message to everyone
+        $recipients = json_decode($this->ReadPropertyString('AllowList'), true);
+        foreach ($recipients as $recipient) {
+            $this->SendMediaEx($MediaID, $recipient['UserID']);
+        }
+    }
+
+    public function SendMediaEx(int $MediaID, string $NameOrChatID)
+    {
+        try {
+            $telegram = new Longman\TelegramBot\Telegram($this->ReadPropertyString('BotApiKey'), $this->ReadPropertyString('BotUsername'));
+
+            // Try to find the name and map to ChatID
+            $NameOrChatID = $this->NameToUserID($NameOrChatID);
+
+            // Prepare stream (we don't want to do any file I/O)
+            $stream = \GuzzleHttp\Psr7\Utils::streamFor(
+                base64_decode(IPS_GetMediaContent($MediaID)),
+                ['metadata' => ['uri' => basename(IPS_GetMedia($MediaID)['MediaFile'])]]
+            );
+
+            // Send message
+            $result = Longman\TelegramBot\Request::sendPhoto([
+                'chat_id' => $NameOrChatID,
+                'caption' => IPS_GetName($MediaID),
+                'photo'   => $stream,
             ]);
 
             if (!$result->isOk()) {
@@ -155,5 +175,16 @@ class TelegramBot extends WebHookModule
             $this->SendDebug('UNKNOWN', sprintf('Unknown Action %s was requested by %s %s (%d)', $data['message']['text'], $data['message']['from']['first_name'], $data['message']['from']['last_name'], $data['message']['from']['id']), 0);
             $this->SendMessageEx($this->Translate('Unknown action!'), strval($data['message']['from']['id']));
         }
+    }
+
+    private function NameToUserID($NameOrChatID)
+    {
+        $recipients = json_decode($this->ReadPropertyString('AllowList'), true);
+        foreach ($recipients as $recipient) {
+            if ($recipient['Name'] == $NameOrChatID) {
+                return $recipient['UserID'];
+            }
+        }
+        return $NameOrChatID;
     }
 }
