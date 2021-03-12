@@ -1,0 +1,52 @@
+{
+    "id": "{65BD352F-DC5A-BEAF-DA11-E9B3E91A1A7C}",
+    "caption": "Send Image",
+    "form": [
+        "$options = [];",
+        "$options[] = [",
+        "   'value' => '',",
+        "   'caption' => '(Everyone)',",
+        "];",
+        "$allowList = IPS_GetProperty($_IPS['TARGET'], 'AllowList');",
+        "$allowList = json_decode($allowList, true);",
+        "foreach($allowList as $user) {",
+        "   $options[] = [",
+        "      'value' => $user['Name'],",
+        "      'caption' => $user['Name'],",
+        "   ];",
+        "}",
+        "return [",
+        "   [",
+        "       'type' => 'SelectMedia',",
+        "       'name' => 'MEDIAID',",
+        "       'caption' => 'Image',",
+        "   ],",
+        "   [",
+        "       'type' => 'Select',",
+        "       'name' => 'RECIPIENT',",
+        "       'caption' => 'Recipient',",
+        "       'options' => $options,",
+        "   ]",
+        "];"
+    ],
+    "action": [
+        "if ($_IPS['RECIPIENT']) {",
+        "   TB_SendImageEx($_IPS['TARGET'], $_IPS['MEDIAID'], $_IPS['RECIPIENT']);",
+        "} else {",
+        "   TB_SendImage($_IPS['TARGET'], $_IPS['MEDIAID']);",
+        "}"
+    ],
+    "restrictions": {
+        "objectType": [ 1 ],
+        "moduleID": [ "{32464EBD-4CCC-6174-4031-5AA374F7CD8D}" ],
+        "environments": [ "TestCommands", "Default" ]
+    },
+    "locale": {
+        "de": {
+            "Send Image": "Verschicke Bild",
+            "Image": "Bild",
+            "Recipient": "Empfänger",
+            "(Everyone)": "(Jeden)"
+        }
+    }
+}

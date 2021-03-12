@@ -1,0 +1,52 @@
+{
+    "id": "{47D434D5-4DA6-7FAC-B236-403BE31B43A8}",
+    "caption": "Send Message",
+    "form": [
+        "$options = [];",
+        "$options[] = [",
+        "   'value' => '',",
+        "   'caption' => '(Everyone)',",
+        "];",
+        "$allowList = IPS_GetProperty($_IPS['TARGET'], 'AllowList');",
+        "$allowList = json_decode($allowList, true);",
+        "foreach($allowList as $user) {",
+        "   $options[] = [",
+        "      'value' => $user['Name'],",
+        "      'caption' => $user['Name'],",
+        "   ];",
+        "}",
+        "return [",
+        "   [",
+        "       'type' => 'ValidationTextBox',",
+        "       'name' => 'TEXT',",
+        "       'caption' => 'Text',",
+        "   ],",
+        "   [",
+        "       'type' => 'Select',",
+        "       'name' => 'RECIPIENT',",
+        "       'caption' => 'Recipient',",
+        "       'options' => $options,",
+        "   ]",
+        "];"
+    ],
+    "action": [
+        "if ($_IPS['RECIPIENT']) {",
+        "   TB_SendMessageEx($_IPS['TARGET'], $_IPS['TEXT'], $_IPS['RECIPIENT']);",
+        "} else {",
+        "   TB_SendMessage($_IPS['TARGET'], $_IPS['TEXT']);",
+        "}"
+    ],
+    "restrictions": {
+        "objectType": [ 1 ],
+        "moduleID": [ "{32464EBD-4CCC-6174-4031-5AA374F7CD8D}" ],
+        "environments": [ "TestCommands", "Default" ]
+    },
+    "locale": {
+        "de": {
+            "Send Message": "Verschicke Nachricht",
+            "Text": "Text",
+            "Recipient": "Empfänger",
+            "(Everyone)": "(Jeden)"
+        }
+    }
+}
