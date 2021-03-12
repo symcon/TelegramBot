@@ -56,7 +56,7 @@ class TelegramBot extends WebHookModule
         // Send message to everyone
         $recipients = json_decode($this->ReadPropertyString('AllowList'), true);
         foreach ($recipients as $recipient) {
-            $this->SendMessageEx($Text, $recipient['UserID']);
+            $this->SendMessageEx($Text, strval($recipient['UserID']));
         }
     }
 
@@ -87,7 +87,7 @@ class TelegramBot extends WebHookModule
         // Send message to everyone
         $recipients = json_decode($this->ReadPropertyString('AllowList'), true);
         foreach ($recipients as $recipient) {
-            $this->SendMediaEx($MediaID, $recipient['UserID']);
+            $this->SendMediaEx($MediaID, strval($recipient['UserID']));
         }
     }
 
