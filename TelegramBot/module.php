@@ -82,16 +82,16 @@ class TelegramBot extends WebHookModule
         }
     }
 
-    public function SendMedia(int $MediaID)
+    public function SendImage(int $MediaID)
     {
         // Send message to everyone
         $recipients = json_decode($this->ReadPropertyString('AllowList'), true);
         foreach ($recipients as $recipient) {
-            $this->SendMediaEx($MediaID, strval($recipient['UserID']));
+            $this->SendImageEx($MediaID, strval($recipient['UserID']));
         }
     }
 
-    public function SendMediaEx(int $MediaID, string $NameOrChatID)
+    public function SendImageEx(int $MediaID, string $NameOrChatID)
     {
         try {
             $telegram = new Longman\TelegramBot\Telegram($this->ReadPropertyString('BotApiKey'), $this->ReadPropertyString('BotUsername'));
