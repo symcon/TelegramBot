@@ -1,0 +1,105 @@
+{
+  "elements": [
+    {
+      "type": "RowLayout",
+      "items": [
+        {
+          "type": "ValidationTextBox",
+          "name": "BotApiKey",
+          "caption": "Bot API Key",
+          "width": "500px"
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "BotUsername",
+          "caption": "Bot Username",
+          "width": "200px"
+        }
+      ]
+    },
+    {
+      "type": "List",
+      "name": "AllowList",
+      "caption": "Users",
+      "rowCount": 3,
+      "add": true,
+      "delete": true,
+      "sort": {
+        "column": "Name",
+        "direction": "ascending"
+      },
+      "columns": [
+        {
+          "caption": "Name",
+          "name": "Name",
+          "width": "auto",
+          "add": "",
+          "edit": {
+            "type": "ValidationTextBox"
+          }
+        },
+        {
+          "caption": "UserID",
+          "name": "UserID",
+          "width": "150px",
+          "add": 0,
+          "edit": {
+            "type": "NumberSpinner"
+          }
+        }
+      ],
+      "values": []
+    },
+    {
+      "type": "List",
+      "name": "ActionList",
+      "caption": "Actions",
+      "rowCount": 3,
+      "add": true,
+      "delete": true,
+      "sort": {
+        "column": "Command",
+        "direction": "ascending"
+      },
+      "columns": [
+        {
+          "caption": "Command",
+          "name": "Command",
+          "width": "auto",
+          "add": "",
+          "edit": {
+            "type": "ValidationTextBox"
+          }
+        },
+        {
+          "caption": "Action",
+          "name": "Action",
+          "width": "500px",
+          "add": "",
+          "edit": {
+            "type": "SelectAction"
+          }
+        }
+      ],
+      "values": []
+    }
+  ],
+  "actions": [
+    {
+      "type": "RowLayout",
+      "items": [
+        {
+          "type": "ValidationTextBox",
+          "name": "Text",
+          "caption": "Message"
+        },
+        {
+          "type": "Button",
+          "caption": "Send",
+          "onClick": "TB_SendMessage($id, $Text);"
+        }
+      ]
+    }
+  ],
+  "status": []
+}

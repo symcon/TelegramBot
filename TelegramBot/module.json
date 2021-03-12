@@ -1,0 +1,12 @@
+{
+    "id": "{32464EBD-4CCC-6174-4031-5AA374F7CD8D}",
+    "name": "TelegramBot",
+    "type": 3,
+    "vendor": "",
+    "aliases": [],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "TB",
+    "url": "https://www.symcon.de"
+}

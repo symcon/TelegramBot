@@ -1,0 +1,21 @@
+{
+    "translations": {
+        "de": {
+            "Bot API Key": "Bot API Key",
+            "Bot Username": "Bot Username",
+            "Users": "Benutzer",
+            "Name": "Name",
+            "UserID": "UserID",
+            "Actions": "Aktionen",
+            "Action": "Aktion",
+            "Command": "Befehl",
+            "Message": "Nachricht",
+            "Send": "Senden",
+            "Action executed!": "Aktion ausgeführt!",
+            "Sending message failed!": "Senden der Nachricht fehlgeschlagen",
+            "Setting webhook failed!": "Setzen des WebHooks fehlgeschlagen",
+            "Access denied!": "Zugriff verweigert!",
+            "Unknown action!": "Unbekannte Aktion!"
+        }
+    }
+}

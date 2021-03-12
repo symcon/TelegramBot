@@ -1,0 +1,12 @@
+{
+    "id": "{35253DF7-D0E7-8AF9-0B52-715ED9E1EA6A}",
+    "name": "TelegramBot",
+    "author": "Symcon GmbH",
+    "url": "https://www.symcon.de",
+    "compatibility": {
+        "version": "5.6"
+    },
+    "version": "1.0",
+    "build": 0,
+    "date": 0
+}
