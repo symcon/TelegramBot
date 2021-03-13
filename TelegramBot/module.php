@@ -44,12 +44,20 @@ class TelegramBot extends WebHookModule
 
                     $result = $telegram->setWebhook($webhook_url);
                     if (!$result->isOk()) {
+                        $this->SetStatus(203);
                         echo $this->Translate('Setting webhook failed!');
+                    } else {
+                        $this->SetStatus(IS_ACTIVE);
                     }
                 } catch (Longman\TelegramBot\Exception\TelegramException $e) {
+                    $this->SetStatus(202);
                     echo $e->getMessage();
                 }
+            } else {
+                $this->SetStatus(201);
             }
+        } else {
+            $this->SetStatus(IS_INACTIVE);
         }
     }
 

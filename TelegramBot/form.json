@@ -1,105 +1,126 @@
 {
-  "elements": [
-    {
-      "type": "RowLayout",
-      "items": [
+    "elements": [
         {
-          "type": "ValidationTextBox",
-          "name": "BotApiKey",
-          "caption": "Bot API Key",
-          "width": "500px"
+            "type": "RowLayout",
+            "items": [
+                {
+                    "type": "ValidationTextBox",
+                    "name": "BotApiKey",
+                    "caption": "Bot API Key",
+                    "width": "500px"
+                },
+                {
+                    "type": "ValidationTextBox",
+                    "name": "BotUsername",
+                    "caption": "Bot Username",
+                    "width": "200px"
+                }
+            ]
         },
         {
-          "type": "ValidationTextBox",
-          "name": "BotUsername",
-          "caption": "Bot Username",
-          "width": "200px"
-        }
-      ]
-    },
-    {
-      "type": "List",
-      "name": "AllowList",
-      "caption": "Users",
-      "rowCount": 3,
-      "add": true,
-      "delete": true,
-      "sort": {
-        "column": "Name",
-        "direction": "ascending"
-      },
-      "columns": [
-        {
-          "caption": "Name",
-          "name": "Name",
-          "width": "auto",
-          "add": "",
-          "edit": {
-            "type": "ValidationTextBox"
-          }
+            "type": "List",
+            "name": "AllowList",
+            "caption": "Users",
+            "rowCount": 3,
+            "add": true,
+            "delete": true,
+            "sort": {
+                "column": "Name",
+                "direction": "ascending"
+            },
+            "columns": [
+                {
+                    "caption": "Name",
+                    "name": "Name",
+                    "width": "auto",
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                },
+                {
+                    "caption": "UserID",
+                    "name": "UserID",
+                    "width": "150px",
+                    "add": 0,
+                    "edit": {
+                        "type": "NumberSpinner"
+                    }
+                }
+            ],
+            "values": []
         },
         {
-          "caption": "UserID",
-          "name": "UserID",
-          "width": "150px",
-          "add": 0,
-          "edit": {
-            "type": "NumberSpinner"
-          }
+            "type": "List",
+            "name": "ActionList",
+            "caption": "Actions",
+            "rowCount": 3,
+            "add": true,
+            "delete": true,
+            "sort": {
+                "column": "Command",
+                "direction": "ascending"
+            },
+            "columns": [
+                {
+                    "caption": "Command",
+                    "name": "Command",
+                    "width": "auto",
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                },
+                {
+                    "caption": "Action",
+                    "name": "Action",
+                    "width": "500px",
+                    "add": "",
+                    "edit": {
+                        "type": "SelectAction"
+                    }
+                }
+            ],
+            "values": []
         }
-      ],
-      "values": []
-    },
-    {
-      "type": "List",
-      "name": "ActionList",
-      "caption": "Actions",
-      "rowCount": 3,
-      "add": true,
-      "delete": true,
-      "sort": {
-        "column": "Command",
-        "direction": "ascending"
-      },
-      "columns": [
+    ],
+    "actions": [
         {
-          "caption": "Command",
-          "name": "Command",
-          "width": "auto",
-          "add": "",
-          "edit": {
-            "type": "ValidationTextBox"
-          }
+            "type": "RowLayout",
+            "items": [
+                {
+                    "type": "ValidationTextBox",
+                    "name": "Text",
+                    "caption": "Message"
+                },
+                {
+                    "type": "Button",
+                    "caption": "Send",
+                    "onClick": "TB_SendMessage($id, $Text);"
+                }
+            ]
+        }
+    ],
+    "status": [
+        {
+            "code": 102,
+            "icon": "active",
+            "caption": "WebHook registration succeeded"
         },
         {
-          "caption": "Action",
-          "name": "Action",
-          "width": "500px",
-          "add": "",
-          "edit": {
-            "type": "SelectAction"
-          }
-        }
-      ],
-      "values": []
-    }
-  ],
-  "actions": [
-    {
-      "type": "RowLayout",
-      "items": [
-        {
-          "type": "ValidationTextBox",
-          "name": "Text",
-          "caption": "Message"
+            "code": 201,
+            "icon": "error",
+            "caption": "Symcon Connect is not active"
         },
         {
-          "type": "Button",
-          "caption": "Send",
-          "onClick": "TB_SendMessage($id, $Text);"
+            "code": 202,
+            "icon": "error",
+            "caption": "Issue with Bot API Key"
+        },
+        {
+            "code": 203,
+            "icon": "error",
+            "caption": "WebHook registration failed"
         }
-      ]
-    }
-  ],
-  "status": []
+    ]
 }
