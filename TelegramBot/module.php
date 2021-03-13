@@ -35,18 +35,20 @@ class TelegramBot extends WebHookModule
         //Never delete this line!
         parent::ApplyChanges();
 
-        $cc_id = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
-        if (IPS_GetInstance($cc_id)['InstanceStatus'] == IS_ACTIVE) {
-            $webhook_url = CC_GetConnectURL($cc_id) . '/hook/telegram/' . $this->InstanceID;
-            try {
-                $telegram = new Longman\TelegramBot\Telegram($this->ReadPropertyString('BotApiKey'), $this->ReadPropertyString('BotUsername'));
+        if ($this->ReadPropertyString('BotApiKey')) {
+            $cc_id = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
+            if (IPS_GetInstance($cc_id)['InstanceStatus'] == IS_ACTIVE) {
+                $webhook_url = CC_GetConnectURL($cc_id) . '/hook/telegram/' . $this->InstanceID;
+                try {
+                    $telegram = new Longman\TelegramBot\Telegram($this->ReadPropertyString('BotApiKey'), $this->ReadPropertyString('BotUsername'));
 
-                $result = $telegram->setWebhook($webhook_url);
-                if (!$result->isOk()) {
-                    echo $this->Translate('Setting webhook failed!');
+                    $result = $telegram->setWebhook($webhook_url);
+                    if (!$result->isOk()) {
+                        echo $this->Translate('Setting webhook failed!');
+                    }
+                } catch (Longman\TelegramBot\Exception\TelegramException $e) {
+                    echo $e->getMessage();
                 }
-            } catch (Longman\TelegramBot\Exception\TelegramException $e) {
-                echo $e->getMessage();
             }
         }
     }
