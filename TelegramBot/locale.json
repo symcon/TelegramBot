@@ -2,10 +2,10 @@
     "translations": {
         "de": {
             "Bot API Key": "Bot API Key",
-            "Bot Username": "Bot Username",
+            "Bot Username": "Bot Benutzername",
             "Users": "Benutzer",
             "Name": "Name",
-            "UserID": "UserID",
+            "UserID": "BenutzerID",
             "Actions": "Aktionen",
             "Action": "Aktion",
             "Command": "Befehl",
