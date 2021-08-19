@@ -167,8 +167,7 @@ class TelegramBot extends WebHookModule
 
                 //Send debug that we will execute
                 $this->SendDebug('EXECUTING', sprintf('Action %s is executing by %s %s (%d)', $data['message']['text'], $data['message']['from']['first_name'], $data['message']['from']['last_name'], $data['message']['from']['id']), 0);
-
-                IPS_RunAction($actionPayload['actionID'], $actionPayload['targetID'], $actionPayload['parameters']);
+                IPS_RunAction($actionPayload['actionID'], array_merge(['TARGET' => $actionPayload['targetID']], $actionPayload['parameters']));
 
                 //Send debug after we executed
                 $this->SendDebug('EXECUTED', sprintf('Action %s was executed by %s %s (%d)', $data['message']['text'], $data['message']['from']['first_name'], $data['message']['from']['last_name'], $data['message']['from']['id']), 0);
