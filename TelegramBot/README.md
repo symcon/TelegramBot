@@ -24,14 +24,10 @@ Erlaubt das Versenden von Nachrichten an angegebene Personen und Ausführen von 
 ### 3 Telegram Bot erstellen
 - Im Telegram-Client nach [BotFather](https://t.me/botfather) suchen 
 - Mit `/newbot` wird ein neuer Bot erstellt
-- Unter dem Benutzernamen kann der Bot gefunden werden und sollte daher mit beispielsweise zufälligen Zahlen bestückt werden
-<br>
-<img src="img/CreateBot.png" width="720px"/>
+- Unter dem Benutzernamen kann der Bot gefunden werden und sollte daher mit beispielsweise zufälligen Zahlen bestückt werden ![Create Bot](img/CreateBot.png)
 - Im Telegram-Client nach [RawDataBot](https://t.me/rawdatabot) suchen
 - Wenn der Bot angeschreiben wird gibt dieser einige Daten zurück, aus denen die eigene BenutzerID entnommen werden kann
-  - Dieser Vorgang muss für jeden Benutzer wiederholt werden, der von dem Bot erreicht werden soll
-  <br>
-<img src="img/UserID.png" width="720px"/>
+  - Dieser Vorgang muss für jeden Benutzer wiederholt werden, der von dem Bot erreicht werden soll ![UserID](img/UserID.png)
 - Den Bot mit `/start` anschreiben um ihn zu starten
 
 
