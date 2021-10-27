@@ -82,6 +82,7 @@ class TelegramBot extends WebHookModule
             $result = Longman\TelegramBot\Request::sendMessage([
                 'chat_id' => $NameOrChatID,
                 'text'    => $Text,
+                'parse_mode' => 'HTML',         // message can format with HTML tags 
             ]);
 
             if (!$result->isOk()) {
