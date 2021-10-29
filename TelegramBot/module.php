@@ -87,8 +87,8 @@ class TelegramBot extends WebHookModule
 
             // Send message
             $result = Longman\TelegramBot\Request::sendMessage([
-                'chat_id' => $NameOrChatID,
-                'text'    => $Text,
+                'chat_id'    => $NameOrChatID,
+                'text'       => $Text,
                 'parse_mode' => $parse_mode,
             ]);
 
