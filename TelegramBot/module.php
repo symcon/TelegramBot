@@ -78,8 +78,8 @@ class TelegramBot extends WebHookModule
             // Try to find the name and map to ChatID
             $NameOrChatID = $this->NameToUserID($NameOrChatID);
 
-            // check formatting options of the message
-            if($Text != strip_tags($Text)) {
+            // Check formatting options of the message
+            if ($Text != strip_tags($Text)) {
                 $parse_mode = 'HTML';
             } else {
                 $parse_mode = 'MarkdownV2';
