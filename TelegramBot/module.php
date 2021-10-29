@@ -78,11 +78,18 @@ class TelegramBot extends WebHookModule
             // Try to find the name and map to ChatID
             $NameOrChatID = $this->NameToUserID($NameOrChatID);
 
+            // check formatting options of the message
+            if($Text != strip_tags($Text)) {
+                $parse_mode = 'HTML';
+            } else {
+                $parse_mode = 'MarkdownV2';
+            }
+
             // Send message
             $result = Longman\TelegramBot\Request::sendMessage([
                 'chat_id' => $NameOrChatID,
                 'text'    => $Text,
-                'parse_mode' => 'HTML',         // message can format with HTML tags 
+                'parse_mode' => $parse_mode,
             ]);
 
             if (!$result->isOk()) {
