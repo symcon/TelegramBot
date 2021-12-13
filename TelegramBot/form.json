@@ -75,7 +75,7 @@
                     "caption": "Action",
                     "name": "Action",
                     "width": "500px",
-                    "add": "",
+                    "add": "{}",
                     "edit": {
                         "type": "SelectAction"
                     }
