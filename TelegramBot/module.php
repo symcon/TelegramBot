@@ -82,7 +82,7 @@ class TelegramBot extends WebHookModule
             if ($Text != strip_tags($Text)) {
                 $parse_mode = 'HTML';
             } else {
-                $parse_mode = 'MarkdownV2';
+                $parse_mode = '';
             }
 
             // Send message
