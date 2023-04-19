@@ -6,5 +6,5 @@
 
 Folgende Module beinhaltet das TelegramBot Repository:
 
-- __TelegramBot__ ([Dokumentation](TelegramBot))  
+- __TelegramBot__ ([Dokumentation](https://www.symcon.de/de/service/dokumentation/modulreferenz/telegrambot))  
 	Erlaubt das Versenden von Nachrichten und Ausführen von Aktionen
