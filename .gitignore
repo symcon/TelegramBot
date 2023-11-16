@@ -2,3 +2,4 @@
 .php_cs.cache
 composer.phar
 .phpunit.*
+.php-cs-fixer.cache

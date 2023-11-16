@@ -37,9 +37,16 @@
         "}"
     ],
     "restrictions": {
-        "objectType": [ 1 ],
-        "moduleID": [ "{32464EBD-4CCC-6174-4031-5AA374F7CD8D}" ],
-        "includeEnvironments": [ "TestCommands", "Default" ]
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{32464EBD-4CCC-6174-4031-5AA374F7CD8D}"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
     },
     "locale": {
         "de": {
