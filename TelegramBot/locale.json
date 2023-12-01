@@ -19,7 +19,8 @@
             "WebHook registration succeeded": "WebHook Registrierung erfolgreich",
             "Symcon Connect is not active": "Symcon Connect ist nicht aktiv",
             "Issue with Bot API Key": "Probleme mit dem Bot API Key",
-            "WebHook registration failed": "WebHook Registrierung fehlgeschlagen"
+            "WebHook registration failed": "WebHook Registrierung fehlgeschlagen",
+            "https://www.symcon.de/en/service/documentation/module-reference/telegrambot/": "https://www.symcon.de/de/service/dokumentation/modulreferenz/telegrambot/"
         }
     }
 }
